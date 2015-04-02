@@ -1,5 +1,7 @@
 package com.example.ericjohannsen.finalprojectejeh;
 
+import android.app.Activity;
+import android.content.DialogInterface;
 import android.gesture.GestureOverlayView;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
@@ -13,19 +15,32 @@ import android.view.View;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 
+import java.util.logging.Filter;
 
-public class MainActivity extends ActionBarActivity implements OnGestureListener{
 
+public class MainActivity extends Activity implements View.OnClickListener{
     private GameView gameView;
     private GestureDetector gestureDetector;
-    private float XVelocity;
-    private float YVelocity;
+    View.OnTouchListener gestureListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        gestureDetector = new GestureDetector(getApplicationContext(), this);
+        gestureDetector = new GestureDetector(getApplicationContext(), new EventHandler(this));
+        gestureListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        };
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 
     @Override
@@ -53,6 +68,9 @@ public class MainActivity extends ActionBarActivity implements OnGestureListener
     public void startGame(View view) {
         gameView = new GameView(this);
         setContentView(gameView);
+        //setting the touch listeners to the gameView, required
+        gameView.setOnClickListener(this);
+        gameView.setOnTouchListener(gestureListener);
     }
 
     public void openInGameMenu() {
@@ -69,60 +87,4 @@ public class MainActivity extends ActionBarActivity implements OnGestureListener
             super.onBackPressed();
         }
     }
-
-    public float getXVelocity() {
-        return XVelocity;
-    }
-
-    public float getYVelocity() {
-        return YVelocity;
-    }
-
-
-
-// <editor-fold desc="Gesture Overrides">
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return gestureDetector.onTouchEvent(event);
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent event1, MotionEvent event2, float xVel, float yVel) {
-        return false;
-    }
-
-    @Override
-    public void onShowPress(MotionEvent event) {
-        Log.d("onShowPress", "ShowPress");
-    }
-
-    @Override
-    public boolean onDown(MotionEvent event) {
-        Log.d("onDown", "Down");
-        return false;
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent event) {
-        Log.d("onSingleTapUp", "SingleTapUp");
-        XVelocity = 0;
-        YVelocity = 0;
-        gameView.setCurX(200);
-        gameView.setCurY(600);
-        return false;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent event) {
-        Log.d("onLongPress", "Long Press");
-    }
-
-    @Override
-    public boolean onFling(MotionEvent event1, MotionEvent event2, float xVel, float yVel) {
-        XVelocity = (event2.getX() - event1.getX()) / (event1.getDownTime() / 160000);
-        YVelocity = (event2.getY() - event1.getY()) / (event1.getDownTime() / 160000);
-        Log.d("Time", String.valueOf(event1.getDownTime() / 160000));
-        return false;
-    }
-//</editor-fold>
 }

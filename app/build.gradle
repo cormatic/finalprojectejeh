@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.ericjohannsen.finalprojectejeh"
-        minSdkVersion 15
-        targetSdkVersion 21
+        minSdkVersion 7   /* originally 15. */
+        targetSdkVersion 7 /*originaly 21. 7 is android 2.1.x*/
         versionCode 1
         versionName "1.0"
     }
