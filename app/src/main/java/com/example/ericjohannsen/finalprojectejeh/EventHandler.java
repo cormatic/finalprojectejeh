@@ -14,9 +14,12 @@ import android.view.View;
  */
 public class EventHandler extends GestureDetector.SimpleOnGestureListener{
 
+
     public EventHandler(Context context){
 
     }
+
+
 
     public boolean onTouchEvent(MotionEvent event) {
         return onTouchEvent(event);

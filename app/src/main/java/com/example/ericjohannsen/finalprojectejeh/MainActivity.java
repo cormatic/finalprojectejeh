@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 
+import java.util.ArrayList;
 import java.util.logging.Filter;
 
 
@@ -22,6 +23,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private GameView gameView;
     private GestureDetector gestureDetector;
     View.OnTouchListener gestureListener;
+    private ArrayList<Levels> levelsArrayList = new ArrayList<>();
 
 
     @Override
@@ -36,7 +38,34 @@ public class MainActivity extends Activity implements View.OnClickListener{
             }
         };
 
+         setLevels();
+
     }
+
+    private void setLevels()
+    {
+        ArrayList<Integer> positions = new ArrayList<>();
+        positions.add(100);
+        positions.add(100);
+        positions.add(10);
+        positions.add(50);
+
+        positions.add(200);
+        positions.add(100);
+        positions.add(10);
+        positions.add(50);
+
+
+        Levels levels = new Levels();
+        levels.addTarget(positions);
+        levelsArrayList.add(levels);
+    }
+
+    public ArrayList<Levels> getLevels()
+    {
+        return levelsArrayList;
+    }
+
 
     @Override
     public void onClick(View v) {

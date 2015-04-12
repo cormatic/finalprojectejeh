@@ -19,8 +19,11 @@ public class GameLoopThread extends Thread {
 
     @Override
     public void run() {
+        Canvas c = view.getHolder().lockCanvas();
+        view.getHolder().unlockCanvasAndPost(c);
+        view.setTargetArray(1,c);
         while (running) {
-            Canvas c = null;
+            c = null;
             try {
                 c = view.getHolder().lockCanvas();
                 synchronized (view.getHolder()) {
@@ -37,9 +40,11 @@ public class GameLoopThread extends Thread {
 
     //formula for two circle collison is (x2-x1)^2 + (y1-y2)^2 <= (r1+r2)^2
     //!!!Note these values need to be centers of the circles
-    public boolean circleCollisionDetection(float X1, float Y1, int X2, int Y2, int R1, int R2)
+    public boolean circleCollisionDetection(float X1, float Y1, double Z1, int X2, int Y2, double Z2, int R1, int R2)
     {
-        if((Math.pow((X2 - X1),2) + Math.pow((Y1 - Y2),2)) <= Math.pow((R1+R2),2))
+        //50 is big circle radius?
+        double ZR = R2/50;
+        if(((Math.pow((X2 - X1),2) + Math.pow((Y1 - Y2),2)) <= Math.pow((R1+R2),2)) && (Z1 < Z2 + ZR && Z1 > Z2 - ZR))
         {
             return true;
         }

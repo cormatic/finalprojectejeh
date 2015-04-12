@@ -11,6 +11,9 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 
 /**
  * Created by joha1eri on 3/17/15.
@@ -22,13 +25,20 @@ public class GameView extends SurfaceView{
     private SurfaceHolder holder;
     private GameLoopThread gameLoopThread;
     private MainActivity activity;
+    private target t;
 
     private static float XVelocity = 0;
     private static float YVelocity = 0;
     private static float curX = 300;
     private static float curY = 500;
+    private static double counter = 0;
     private static int width;
     private static int height;
+    private static boolean enableCounter = false;
+
+    private double curZ = 5;
+    private ArrayList<target> tArray = new ArrayList<>();
+
 
     public GameView(Context context) {
         super(context);
@@ -37,6 +47,8 @@ public class GameView extends SurfaceView{
         activity.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         height = displaymetrics.heightPixels;
         width = displaymetrics.widthPixels;
+        curX = width/2 - 10;
+        curY = height/1.2f - 10;
         gameLoopThread = new GameLoopThread(this);
         holder = getHolder();
         holder.addCallback(new SurfaceHolder.Callback() {
@@ -65,8 +77,23 @@ public class GameView extends SurfaceView{
         });
         //load images into memory here
         bmp = BitmapFactory.decodeResource(getResources(), R.drawable.smallcircle);
-        bmp2 = BitmapFactory.decodeResource(getResources(), R.drawable.circle);
         bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pause);
+    }
+
+    public void setTargetArray(int numTargets, Canvas canvas)
+    {
+        bmp2 = BitmapFactory.decodeResource(getResources(), R.drawable.circle);
+        ArrayList<Levels> levels =  activity.getLevels();
+        ArrayList<Integer> positions = levels.get(0).getTargetArrayList();
+        for(int i=0; i <positions.size()/4; i++)
+        {
+            t = new target(bmp2,canvas);
+            t.setX(positions.get(i*4));
+            t.setY(positions.get(i*4+1));
+            t.setZ(positions.get(i*4+2));
+            t.setR(positions.get(i*4+3));
+            tArray.add(t);
+        }
     }
 
     //fling event
@@ -74,8 +101,14 @@ public class GameView extends SurfaceView{
     {
         Log.d("Width:", String.valueOf(width));
         Log.d("Height", String.valueOf(height));
-        XVelocity = (event2.getX() - event1.getX()) / (event1.getDownTime() / 16000);
-        YVelocity = (event2.getY() - event1.getY()) / (event1.getDownTime() / 16000);
+        //XVelocity = (event2.getX() - event1.getX()) / (event1.getDownTime() / 100000);
+        //YVelocity = (event2.getY() - event1.getY()) / (event1.getDownTime() / 100000);
+        XVelocity = xVel/300;
+        YVelocity = yVel/300;
+        Log.d("xVel",String.valueOf(XVelocity));
+        Log.d("yVel",String.valueOf(YVelocity));
+
+        enableCounter = true;
     }
 
     //for now reset with single tap
@@ -87,25 +120,60 @@ public class GameView extends SurfaceView{
 
         XVelocity = 0;
         YVelocity = 0;
-        curX = 300;
-        curY = 500;
+        curX = width/2 - 10;
+        curY = height/1.2f - 10;
+        enableCounter = false;
+        counter = 0;
     }
 
     protected void Draw(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
 
         //note center of android guy is about (36,36)
-        if(gameLoopThread.circleCollisionDetection(curX+10,curY+10,150,150,10,50))
+        for(int i=0; i<tArray.size(); i++)
         {
-            XVelocity = 0;
-            YVelocity = 0;
-        }
+            if (gameLoopThread.circleCollisionDetection(curX + 10, curY + 10, curZ, tArray.get(i).getX()+tArray.get(i).getR(), tArray.get(i).getY()+tArray.get(i).getR(),tArray.get(i).getZ(), 10, tArray.get(i).getR())) {
+                XVelocity = 0;
+                YVelocity = 0;
+                enableCounter = false;
+                counter = 0;
 
+            }
+        }
         curX += XVelocity;
         curY += YVelocity;
+        curZ = -.5*Math.pow(counter/100 -3,2) + 9.5;
+
         //so (150, 150) is center of this circle
-        canvas.drawBitmap(bmp2, 100, 100, null);
+
+        ArrayList<Boolean> zTable = new ArrayList<>();
+        for(int i=0; i<tArray.size(); i++)
+        {
+            int z = tArray.get(i).getZ();
+            zTable.add(z<curZ);
+        }
+        //Targets
+        for(int i=0; i<tArray.size(); i++)
+        {
+            if (zTable.get(i))
+                tArray.get(i).drawBitmap();
+        }
+
+        //player circle
         canvas.drawBitmap(bmp, curX, curY, null);
-        canvas.drawBitmap(bitmap, width-80, 0, null);
+
+        for(int i=0; i<tArray.size(); i++)
+        {
+            if (!zTable.get(i))
+                tArray.get(i).drawBitmap();
+        }
+
+        //pause
+        canvas.drawBitmap(bitmap, width-(width/8.5f), 0, null);
+        if(enableCounter)
+        {
+            counter++;
+        }
+        Log.d("curZ",String.valueOf(curZ));
     }
 }
